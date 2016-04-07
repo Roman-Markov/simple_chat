@@ -2,8 +2,10 @@ TEMPLATE     = app
 QT      += widgets network
 SOURCES += \
     main.cpp \
-    chatclient.cpp
+    chatclient.cpp \
+    login.cpp
 
 HEADERS += \
-    chatclient.h
+    chatclient.h \
+    login.h
 windows:TARGET = ../Client
