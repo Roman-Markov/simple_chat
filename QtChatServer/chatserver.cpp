@@ -1,6 +1,7 @@
 #include <QtNetwork>
 #include <QtWidgets>
 #include "chatserver.h"
+#include <set>
 
 ChatServer::ChatServer(int numport, QWidget *pwgt): QWidget(pwgt), nBlockSize(0)
 {
@@ -25,14 +26,16 @@ ChatServer::ChatServer(int numport, QWidget *pwgt): QWidget(pwgt), nBlockSize(0)
 }
 
 /*virtual*/ void ChatServer::slotNewConnection(){
+    //Получение нового соединения и инициализация соответсвующего сокета
     QTcpSocket* pClientSocket = ptcpServer->nextPendingConnection();
 
     connect(pClientSocket, SIGNAL(disconnected()),
             pClientSocket, SLOT(deleteLater()));
     connect(pClientSocket, SIGNAL(readyRead()),
             this, SLOT(slotReadClient()));
+    clients.insert(pClientSocket);
+    sendToClient("Server response: Connected!");
 
-    sendToClient(pClientSocket, "Server response: Connected!");
 }
 
 void ChatServer::slotReadClient(){
@@ -53,11 +56,11 @@ void ChatServer::slotReadClient(){
         QString strmsg = time.toString() + " " + "Client has sent - " + str;
         ptxt->append(strmsg);
         nBlockSize = 0;
-        sendToClient(pClientSocket, "Server response: Received\"" + str + "\"");
+        sendToClient("Server response: Received\"" + str + "\"");
     }
 }
 
-void ChatServer::sendToClient(QTcpSocket* pClientSocket, const QString& str){
+void ChatServer::sendToClient(const QString& str){
     QByteArray ar;
     QDataStream out(&ar, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_5);
@@ -65,7 +68,9 @@ void ChatServer::sendToClient(QTcpSocket* pClientSocket, const QString& str){
     out.device()->seek(0);
     out << quint16(ar.size() - sizeof(quint16));
 
-    pClientSocket->write(ar);
+    foreach(QTcpSocket* pSocket, clients){
+    pSocket->write(ar);
+    }
 }
 
 

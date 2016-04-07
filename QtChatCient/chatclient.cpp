@@ -73,31 +73,3 @@ pInput->setText("");
 void ChatClient::slotConnected(){
     ptxt->append("Received the connected() signal");
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
