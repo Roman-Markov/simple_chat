@@ -1,6 +1,7 @@
 #include <QtNetwork>
 #include <QtWidgets>
 #include "chatserver.h"
+#include "client.h"
 #include <set>
 
 ChatServer::ChatServer(int numport, QWidget *pwgt): QWidget(pwgt), nBlockSize(0)
@@ -33,7 +34,8 @@ ChatServer::ChatServer(int numport, QWidget *pwgt): QWidget(pwgt), nBlockSize(0)
             pClientSocket, SLOT(deleteLater()));
     connect(pClientSocket, SIGNAL(readyRead()),
             this, SLOT(slotReadClient()));
-    clients.insert(pClientSocket);
+    Client newClient = pClientSocket;
+    clients.insert(newClient);
     sendToClient("Server response: Connected!");
 
 }
@@ -56,7 +58,7 @@ void ChatServer::slotReadClient(){
         QString strmsg = time.toString() + " " + "Client has sent - " + str;
         ptxt->append(strmsg);
         nBlockSize = 0;
-        sendToClient("Server response: Received\"" + str + "\"");
+        sendToClient(str);
     }
 }
 
@@ -68,8 +70,8 @@ void ChatServer::sendToClient(const QString& str){
     out.device()->seek(0);
     out << quint16(ar.size() - sizeof(quint16));
 
-    foreach(QTcpSocket* pSocket, clients){
-    pSocket->write(ar);
+    foreach(Client client, clients){
+    client.socket()->write(ar);
     }
 }
 

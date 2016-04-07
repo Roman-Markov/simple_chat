@@ -1,7 +1,8 @@
 #pragma once
 
 #include <QWidget>
-#include <QSet>
+#include <set>
+#include <client.h>
 class QTcpServer;
 class QTextEdit;
 class QTcpSocket;
@@ -9,7 +10,7 @@ class QTcpSocket;
 class ChatServer: public QWidget{
 Q_OBJECT
 private:
-    QSet<QTcpSocket*> clients;
+    std::set<Client> clients;
     QTcpServer* ptcpServer;
     QTextEdit* ptxt;
     quint16 nBlockSize;
