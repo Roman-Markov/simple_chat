@@ -39,8 +39,8 @@ ChatServer::ChatServer(int numport, QWidget *pwgt): QWidget(pwgt), nBlockSize(0)
     Client newClient;
     newClient.setSocket(pClientSocket);
     newclients.insert(newClient);
-    ptxt->append("new connection");
-    sendToClient("Server response: Connected!");
+    //ptxt->append("new connection");
+    //sendToClient("Server response: Connected!");
 }
 
 void ChatServer::slotReadClient(){
