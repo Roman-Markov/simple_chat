@@ -2,6 +2,8 @@
 #include <QtWidgets>
 #include "chatserver.h"
 #include "client.h"
+#include <QString>
+#include <iostream>
 #include <set>
 
 ChatServer::ChatServer(int numport, QWidget *pwgt): QWidget(pwgt), nBlockSize(0)
@@ -34,14 +36,62 @@ ChatServer::ChatServer(int numport, QWidget *pwgt): QWidget(pwgt), nBlockSize(0)
             pClientSocket, SLOT(deleteLater()));
     connect(pClientSocket, SIGNAL(readyRead()),
             this, SLOT(slotReadClient()));
-    Client newClient = pClientSocket;
-    clients.insert(newClient);
+    Client newClient;
+    newClient.socket() = pClientSocket;
+    newclients.insert(newClient);
+    ptxt->append("new connection");
     sendToClient("Server response: Connected!");
-
 }
 
 void ChatServer::slotReadClient(){
     QTcpSocket* pClientSocket = (QTcpSocket*) sender();
+    foreach(Client client, clients){
+        if(client.socket()->socketDescriptor() == pClientSocket->socketDescriptor()){
+            readClient(pClientSocket);
+            return;
+        }
+    }
+    QDataStream in(pClientSocket);
+    in.setVersion(QDataStream::Qt_5_5);
+    for(;;){
+        if(!nBlockSize){
+            if(pClientSocket->bytesAvailable() < (int) sizeof(quint16))
+                break;
+            in >> nBlockSize;
+        }
+        if(pClientSocket->bytesAvailable() < nBlockSize)
+            break;
+        QString str;
+        in >> str;
+        foreach(Client client, newclients){
+            if(client.socket()->socketDescriptor() == pClientSocket->socketDescriptor()){
+                client = str;
+                clients.insert(client);
+                newclients.erase(client);
+                QString strmsg = QTime::currentTime().toString() + "New user - " + str;
+                ptxt->append(strmsg);
+                nBlockSize = 0;
+                sendToClient(str + " joined us");
+            }
+        }
+
+    }
+}
+
+void ChatServer::sendToClient(const QString& str){
+    QByteArray ar;
+    QDataStream out(&ar, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_5);
+    out << quint16(0) << QTime::currentTime() << str;
+    out.device()->seek(0);
+    out << quint16(ar.size() - sizeof(quint16));
+
+    foreach(Client client, clients){
+    client.socket()->write(ar);
+    }
+}
+
+void ChatServer::readClient(QTcpSocket* pClientSocket){
     QDataStream in(pClientSocket);
     in.setVersion(QDataStream::Qt_5_5);
     for(;;){
@@ -61,22 +111,6 @@ void ChatServer::slotReadClient(){
         sendToClient(str);
     }
 }
-
-void ChatServer::sendToClient(const QString& str){
-    QByteArray ar;
-    QDataStream out(&ar, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_5);
-    out << quint16(0) << QTime::currentTime() << str;
-    out.device()->seek(0);
-    out << quint16(ar.size() - sizeof(quint16));
-
-    foreach(Client client, clients){
-    client.socket()->write(ar);
-    }
-}
-
-
-
 
 
 

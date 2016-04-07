@@ -2,26 +2,28 @@
 #include <QString>
 #include "client.h"
 
-Client::Client(const Client& client){
-    UserName = client.UserName;
-    pSocket = client.pSocket;
+Client::Client(const Client& cl){
+    UserName = cl.UserName;
+    pSocket = cl.pSocket;
 }
 
-Client::Client(QTcpSocket *ps){
+Client::Client(const QString& name, QTcpSocket* ps){
+    UserName = name;
     pSocket = ps;
-    UserName = "whoiam";
 }
 
-QTcpSocket* Client::socket(){
+QTcpSocket *&Client::socket(){
     return pSocket;
 }
 
 QTcpSocket* Client::operator=(QTcpSocket* psock){
     pSocket = psock;
+    UserName = "whoiam";
 }
 
-QString Client::operator=(QString* pstr){
-    UserName = *pstr;
+Client Client::operator=(QString pstr){
+    UserName = pstr;
+    return *this;
 }
 
 Client Client::operator=(Client* pclient){

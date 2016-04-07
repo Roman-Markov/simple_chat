@@ -10,11 +10,13 @@ private:
     QString UserName;
     QTcpSocket* pSocket;
 public:
+    Client(const QString& name = "whoiam", QTcpSocket* ps = 0);
     Client(const Client& cl);
-    Client(QTcpSocket* ps);
-    QTcpSocket* socket();
+
+    QTcpSocket*& socket();
+    //QString& UserName();
     QTcpSocket* operator=(QTcpSocket* psock);
-    QString operator=(QString* pstr);
+    Client operator=(QString pstr);
     Client operator=(Client* pclient);
     bool operator<(const Client& pclient)const;
     bool operator==(const Client& pclient)const;

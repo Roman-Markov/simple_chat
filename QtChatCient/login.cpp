@@ -20,6 +20,20 @@ Login::Login(QWidget *pwgt): QWidget(pwgt){
 }
 
 void Login::slotSendLogin(){
+    pChatClient->name() = pline->text();
     pChatClient->show();
     this->close();
+    sendName();
+}
+
+
+void Login::sendName(){
+    QByteArray ar;
+    QDataStream out(&ar, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_5);
+    QString username = pline->text();
+    out << quint16(0) << username;
+    out.device()->seek(0);
+    out << quint16(username.size()+1 - sizeof(quint16));
+    pChatClient->tcpsocket()->write(ar);
 }

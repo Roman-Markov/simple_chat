@@ -2,9 +2,10 @@
 #include <QtWidgets>
 #include "chatclient.h"
 
-ChatClient::ChatClient(const QString strhost, int nPort, QWidget *pwgt):
+ChatClient::ChatClient(const QString strhost, int nPort, QString name, QWidget *pwgt):
     QWidget(pwgt), nBlockSize(0)
 {
+    UserName = name;
     pTcpSocket = new QTcpSocket(this);
     pTcpSocket->connectToHost(strhost, nPort);
     connect(pTcpSocket, SIGNAL(connected()), SLOT(slotConnected()));
@@ -25,6 +26,7 @@ ChatClient::ChatClient(const QString strhost, int nPort, QWidget *pwgt):
     pvbxLayout->addWidget(pcmdSend);
     setLayout(pvbxLayout);
 }
+
 
 void ChatClient::slotReadyRead(){
     QDataStream in(pTcpSocket);
@@ -59,15 +61,22 @@ void ChatClient::slotError(QAbstractSocket::SocketError err)
 }
 
 void ChatClient::slotSendToServer(){
-QByteArray ar;
-QDataStream out(&ar, QIODevice::WriteOnly);
-out.setVersion(QDataStream::Qt_5_5);
-out << quint16(0) << QTime::currentTime() << pInput->text();
-out.device()->seek(0);
-out << quint16(ar.size() - sizeof(quint16));
+    QByteArray ar;
+    QDataStream out(&ar, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_5);
+    out << quint16(0) << QTime::currentTime() << pInput->text();
+    out.device()->seek(0);
+    out << quint16(ar.size() - sizeof(quint16));
 
-pTcpSocket->write(ar);
-pInput->setText("");
+    pTcpSocket->write(ar);
+    pInput->setText("");
+}
+
+QString& ChatClient::name(){
+    return UserName;
+}
+QTcpSocket* ChatClient::tcpsocket(){
+    return pTcpSocket;
 }
 
 void ChatClient::slotConnected(){

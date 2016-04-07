@@ -14,7 +14,10 @@ private:
     QLineEdit* pInput;
     quint16 nBlockSize;
 public:
-    ChatClient(const QString strhost, int nPort, QWidget* pwgt = 0);
+    QString UserName;
+    ChatClient(const QString strhost, int nPort, QString name = "", QWidget* pwgt = 0);
+    QString& name();
+    QTcpSocket* tcpsocket();
 public slots:
     void slotReadyRead();
     void slotError(QAbstractSocket::SocketError);

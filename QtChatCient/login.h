@@ -15,6 +15,7 @@ private:
     QHBoxLayout* phbx;
 public:
     Login(QWidget* pwgt = 0);
+    void sendName();
 public slots:
     void slotSendLogin();
 };
