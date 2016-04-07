@@ -12,13 +12,17 @@ Client::Client(const QString& name, QTcpSocket* ps){
     pSocket = ps;
 }
 
-QTcpSocket *&Client::socket(){
+void Client::setSocket(QTcpSocket* ps){
+    pSocket = ps;
+}
+
+QTcpSocket* Client::socket()const{
     return pSocket;
 }
 
-QTcpSocket* Client::operator=(QTcpSocket* psock){
+Client Client::operator=(QTcpSocket* psock){
     pSocket = psock;
-    UserName = "whoiam";
+    return *this;
 }
 
 Client Client::operator=(QString pstr){

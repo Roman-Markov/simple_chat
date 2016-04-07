@@ -37,7 +37,7 @@ ChatServer::ChatServer(int numport, QWidget *pwgt): QWidget(pwgt), nBlockSize(0)
     connect(pClientSocket, SIGNAL(readyRead()),
             this, SLOT(slotReadClient()));
     Client newClient;
-    newClient.socket() = pClientSocket;
+    newClient.setSocket(pClientSocket);
     newclients.insert(newClient);
     ptxt->append("new connection");
     sendToClient("Server response: Connected!");
@@ -51,6 +51,7 @@ void ChatServer::slotReadClient(){
             return;
         }
     }
+    // не прошел проверку, т. е. новый, принимаем от него псевдоним
     QDataStream in(pClientSocket);
     in.setVersion(QDataStream::Qt_5_5);
     for(;;){
@@ -63,7 +64,7 @@ void ChatServer::slotReadClient(){
             break;
         QString str;
         in >> str;
-        foreach(Client client, newclients){
+        /*foreach(Client client, newclients){
             if(client.socket()->socketDescriptor() == pClientSocket->socketDescriptor()){
                 client = str;
                 clients.insert(client);
@@ -73,8 +74,22 @@ void ChatServer::slotReadClient(){
                 nBlockSize = 0;
                 sendToClient(str + " joined us");
             }
+        }*/
+        int j = 0;
+        std::set<Client>::iterator iter = newclients.begin();
+        while( j < newclients.size()){
+            if(iter->socket()->socketDescriptor() == pClientSocket->socketDescriptor()){
+                Client temp(str, (*iter).socket());
+                clients.insert(temp);
+                newclients.erase(iter);
+                QString strmsg = QTime::currentTime().toString() + "New user - " + str;
+                ptxt->append(strmsg);
+                nBlockSize = 0;
+                sendToClient(str + " joined us");
+            }
+            j++;
+            iter++;
         }
-
     }
 }
 
@@ -91,6 +106,7 @@ void ChatServer::sendToClient(const QString& str){
     }
 }
 
+// чтение сообщений активных сокетов
 void ChatServer::readClient(QTcpSocket* pClientSocket){
     QDataStream in(pClientSocket);
     in.setVersion(QDataStream::Qt_5_5);
