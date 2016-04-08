@@ -100,9 +100,6 @@ void ChatServer::sendToClient(const QString& str){
     for(std::set<Client>::iterator iter = clients.begin(); iter != clients.end(); iter++){
         iter->socket()->write(ar);
     }
-    //foreach(Client client, clients){
-    //client.socket()->write(ar);
-    //}
 }
 
 // чтение сообщений активных сокетов
@@ -123,7 +120,16 @@ void ChatServer::readClient(QTcpSocket* pClientSocket){
         QString strmsg = time.toString() + " " + "Client has sent - " + str;
         ptxt->append(strmsg);
         nBlockSize = 0;
-        sendToClient(str);
+        QString strname;
+        foreach(Client client, clients){
+            if(client.socket()->socketDescriptor() == pClientSocket->socketDescriptor()){
+                strname = client.name();
+                break;
+            }
+        }
+        QString strhtml = "<H4><FONT COLOR=RED>" + strname
+                + ":: </FONT><FONT COLOR=BLUE>" + str + "</FONT> <H4>";
+        sendToClient(strhtml);
     }
 }
 
