@@ -36,11 +36,13 @@ ChatServer::ChatServer(int numport, QWidget *pwgt): QWidget(pwgt), nBlockSize(0)
             pClientSocket, SLOT(deleteLater()));
     connect(pClientSocket, SIGNAL(readyRead()),
             this, SLOT(slotReadClient()));
-    Client newClient;
-    newClient.setSocket(pClientSocket);
-    newclients.insert(newClient);
-    //ptxt->append("new connection");
-    //sendToClient("Server response: Connected!");
+    //Client newClient;
+    //newClient.setSocket(pClientSocket);
+    newclients.insert(Client("whoiam" + QString::number(rand()%1000000000), pClientSocket));
+    qint32 n = newclients.size();
+    ptxt->append(QString::number(n));
+    ptxt->append("new connection");
+    sendToClient("Server response: Connected!");
 }
 
 void ChatServer::slotReadClient(){
@@ -64,28 +66,23 @@ void ChatServer::slotReadClient(){
             break;
         QString str;
         in >> str;
-        /*foreach(Client client, newclients){
-            if(client.socket()->socketDescriptor() == pClientSocket->socketDescriptor()){
-                client = str;
-                clients.insert(client);
-                newclients.erase(client);
-                QString strmsg = QTime::currentTime().toString() + "New user - " + str;
-                ptxt->append(strmsg);
-                nBlockSize = 0;
-                sendToClient(str + " joined us");
-            }
-        }*/
         int j = 0;
+        // удаляем из новых, добавляем к активным
         std::set<Client>::iterator iter = newclients.begin();
         while( j < newclients.size()){
             if(iter->socket()->socketDescriptor() == pClientSocket->socketDescriptor()){
-                Client temp(str, (*iter).socket());
+                Client temp(str, pClientSocket);
                 clients.insert(temp);
                 newclients.erase(iter);
+
+                qint32 n = newclients.size();
+                ptxt->append("Осталось" + QString::number(n));
+
                 QString strmsg = QTime::currentTime().toString() + "New user - " + str;
                 ptxt->append(strmsg);
                 nBlockSize = 0;
                 sendToClient(str + " joined us");
+                break;
             }
             j++;
             iter++;
@@ -101,9 +98,12 @@ void ChatServer::sendToClient(const QString& str){
     out.device()->seek(0);
     out << quint16(ar.size() - sizeof(quint16));
 
-    foreach(Client client, clients){
-    client.socket()->write(ar);
+    for(std::set<Client>::iterator iter = clients.begin(); iter != clients.end(); iter++){
+        iter->socket()->write(ar);
     }
+    //foreach(Client client, clients){
+    //client.socket()->write(ar);
+    //}
 }
 
 // чтение сообщений активных сокетов
