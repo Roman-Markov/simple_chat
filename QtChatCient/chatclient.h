@@ -11,7 +11,7 @@ Q_OBJECT
 private:
     QTcpSocket* pTcpSocket;
     QTextEdit* ptxt;
-    QLineEdit* pInput;
+    QTextEdit* pInput;
     quint16 nBlockSize;
 public:
     QString UserName;
@@ -21,6 +21,7 @@ public:
 public slots:
     void slotReadyRead();
     void slotError(QAbstractSocket::SocketError);
+    void slotInsertImage();
     void slotSendToServer();
     void slotConnected();
 };

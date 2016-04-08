@@ -6,3 +6,6 @@ QT      += widgets network
 HEADERS = chatserver.h \
     client.h
 windows:TARGET = ../Server
+
+RESOURCES += \
+    resource.qrc

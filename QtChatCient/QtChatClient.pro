@@ -9,3 +9,6 @@ HEADERS += \
     chatclient.h \
     login.h
 windows:TARGET = ../Client
+
+RESOURCES += \
+    resource.qrc

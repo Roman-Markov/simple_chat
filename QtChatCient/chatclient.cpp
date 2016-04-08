@@ -13,17 +13,39 @@ ChatClient::ChatClient(const QString strhost, int nPort, QString name, QWidget *
     connect(pTcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
             this, SLOT(slotError(QAbstractSocket::SocketError)));
     ptxt = new QTextEdit;
-    pInput = new QLineEdit;
+    pInput = new QTextEdit;
     ptxt->setReadOnly(true);
 
     QPushButton* pcmdSend = new QPushButton("&Send");
     connect(pcmdSend, SIGNAL(clicked()), SLOT(slotSendToServer()));
     connect(pInput, SIGNAL(returnPressed()), this, SLOT(slotSendToServer()));
+
+    QPixmap pix1(":/1.png");
+    QPushButton* pcmdPix1 = new QPushButton;
+    pcmdPix1->setIcon(pix1);
+    pcmdPix1->setIconSize(pix1.size());
+    QPixmap pix2(":/2.png");
+    QPushButton* pcmdPix2 = new QPushButton;
+    pcmdPix2->setIcon(pix2);
+    pcmdPix2->setIconSize(pix2.size());
+    QPixmap pix3(":/3.png");
+    QPushButton* pcmdPix3 = new QPushButton;
+    pcmdPix3->setIcon(pix3);
+    pcmdPix3->setIconSize(pix3.size());
+    connect(pcmdPix1, SIGNAL(clicked()), this, SLOT(slotInsertImage()));
+    //connect(pcmdPix1, SIGNAL(clicked()), this, SLOT(slotInsertImage()));
+    //connect(pcmdPix1, SIGNAL(clicked()), this, SLOT(slotInsertImage()));
+
     QVBoxLayout* pvbxLayout = new QVBoxLayout;
     pvbxLayout->addWidget(new QLabel("<H1>Client</H1>"));
     pvbxLayout->addWidget(ptxt);
-    pvbxLayout->addWidget((pInput));
-    pvbxLayout->addWidget(pcmdSend);
+    pvbxLayout->addWidget(pInput);
+    QHBoxLayout* phbxLayout = new QHBoxLayout;
+    phbxLayout->addWidget(pcmdSend);
+    phbxLayout->addWidget(pcmdPix1);
+    phbxLayout->addWidget(pcmdPix2);
+    phbxLayout->addWidget(pcmdPix3);
+    pvbxLayout->addLayout(phbxLayout);
     setLayout(pvbxLayout);
 }
 
@@ -64,7 +86,7 @@ void ChatClient::slotSendToServer(){
     QByteArray ar;
     QDataStream out(&ar, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_5);
-    out << quint16(0) << QTime::currentTime() << pInput->text();
+    out << quint16(0) << QTime::currentTime() << pInput-> textCursor().block().text();
     out.device()->seek(0);
     out << quint16(ar.size() - sizeof(quint16));
 
@@ -81,4 +103,8 @@ QTcpSocket* ChatClient::tcpsocket(){
 
 void ChatClient::slotConnected(){
     ptxt->append("Received the connected() signal");
+}
+
+void ChatClient::slotInsertImage(){
+    pInput->insertHtml("<IMG SRC=\":/1.png\">");
 }
