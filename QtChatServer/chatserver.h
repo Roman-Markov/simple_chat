@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <set>
 #include <client.h>
+#include <QTcpSocket>
 class QTcpServer;
 class QTextEdit;
 class QTcpSocket;
@@ -22,6 +23,7 @@ public:
     void readClient(QTcpSocket* pClientSocket);
 public slots:
     virtual void slotNewConnection();
+    void slotDisconnected();
     void slotReadClient();
 };
 

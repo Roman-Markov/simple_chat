@@ -7,6 +7,10 @@ Client::Client(const Client& cl){
     pSocket = cl.pSocket;
 }
 
+QString Client::name(){
+    return UserName;
+}
+
 Client::Client(const QString& name, QTcpSocket* ps){
     UserName = name;
     pSocket = ps;

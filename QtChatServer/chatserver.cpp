@@ -36,19 +36,16 @@ ChatServer::ChatServer(int numport, QWidget *pwgt): QWidget(pwgt), nBlockSize(0)
             pClientSocket, SLOT(deleteLater()));
     connect(pClientSocket, SIGNAL(readyRead()),
             this, SLOT(slotReadClient()));
-    //Client newClient;
-    //newClient.setSocket(pClientSocket);
     newclients.insert(Client("whoiam" + QString::number(rand()%1000000000), pClientSocket));
     qint32 n = newclients.size();
-    ptxt->append(QString::number(n));
-    ptxt->append("new connection");
+    ptxt->append(QString::number(n) + " new connections");
     sendToClient("Server response: Connected!");
 }
 
 void ChatServer::slotReadClient(){
     QTcpSocket* pClientSocket = (QTcpSocket*) sender();
-    foreach(Client client, clients){
-        if(client.socket()->socketDescriptor() == pClientSocket->socketDescriptor()){
+    for(std::set<Client>::iterator iter = clients.begin(); iter != clients.end(); iter++){
+        if(iter->socket()->socketDescriptor() == pClientSocket->socketDescriptor()){
             readClient(pClientSocket);
             return;
         }
@@ -73,12 +70,14 @@ void ChatServer::slotReadClient(){
             if(iter->socket()->socketDescriptor() == pClientSocket->socketDescriptor()){
                 Client temp(str, pClientSocket);
                 clients.insert(temp);
+                connect(temp.socket(), SIGNAL(disconnected ()),
+                      this, SLOT(slotDisconnected()));
                 newclients.erase(iter);
 
                 qint32 n = newclients.size();
-                ptxt->append("Осталось" + QString::number(n));
+                ptxt->append("Осталось в логине: " + QString::number(n));
 
-                QString strmsg = QTime::currentTime().toString() + "New user - " + str;
+                QString strmsg = QTime::currentTime().toString() + " New user - " + str;
                 ptxt->append(strmsg);
                 nBlockSize = 0;
                 sendToClient(str + " joined us");
@@ -128,6 +127,19 @@ void ChatServer::readClient(QTcpSocket* pClientSocket){
     }
 }
 
-
+void ChatServer::slotDisconnected()
+{
+    QTcpSocket* pClientSocket = (QTcpSocket*) sender();
+    // Удаление испорченных сокетов
+    foreach(Client client, clients){
+        if(client.socket()->socketDescriptor() == pClientSocket->socketDescriptor()){
+            ptxt->append(client.name() + " go out");
+            clients.erase(client);
+            break;
+        }
+    }
+    qint32 n = clients.size();
+    ptxt->append("Осталось активных: " + QString::number(n));
+}
 
 
